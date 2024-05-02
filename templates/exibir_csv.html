@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exibir CSV</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+        background-color: #13505B;
+        color: #fff;
+        padding: 10px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        nav li {
+            float: left;
+        }
+
+        nav li a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        nav li a:hover {
+            background-color: #111;
+        }
+        footer {
+            background-color: #0C7489;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        .container {
+            width: 100%;
+            overflow-x: auto; /* Adiciona barra de rolagem horizontal */
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%; /* Define a largura da tabela como 100% */
+        }
+        th, td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            border-right: 1px solid #ddd; /* Adiciona divisor entre as colunas */
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .hide {
+            display: none; /* Oculta a tabela */
+        }
+        .info {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>DiaryFinder
+        </h1>
+        <nav>
+            <ul>
+                <li><a href="/atualizar-repositorio">Página Inicial</a></li>
+                <li><a href="/sobre">Sobre</a></li>
+                <li><a href="/contato">Contato</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main>
+        <div class="container">
+            <h2>Conteúdo do Arquivo CSV</h2>
+            <button onclick="toggleTable()">Ocultar/Exibir Tabela</button>
+            <button onclick="saveLinksToFile()">Salvar Links em Arquivo de Texto</button>
+            
+            <table id="csvTable">
+                <thead>
+                    <tr>
+                        {% for column in header %}
+                            <th>{{ column }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data_rows %}
+                        <tr>
+                            {% for cell in row %}
+                                {% if loop.index0 == 0 %} <!-- Verifica se é a coluna 'files' -->
+                                    <!-- Extrai apenas o valor de 'path' da estrutura JSON -->
+                                    <td>{{ cell[0][''] }}</td>
+                                {% else %}
+                                    <td>{{ cell }}</td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        
+        </div>
+
+        <!-- Div para o número de edições -->
+        <div class="info" id="editionInfo">
+            <h3>Número de Edições</h3>
+            <p>Quantidade: <span id="editionCount">-</span></p>
+        </div>
+
+        <!-- Div para a última linha da coluna date -->
+        <div class="info" id="lastDateInfo">
+            <h3>Última Linha da Coluna Date</h3>
+            <p>Data: <span id="lastDate">-</span></p>
+        </div>
+
+        <!-- Div para a primeira linha da coluna date -->
+        <div class="info" id="firstDateInfo">
+            <h3>Primeira Linha da Coluna Date</h3>
+            <p>Data: <span id="firstDate">-</span></p>
+        </div>
+
+        <!-- Div para a primeira linha da coluna territory_id -->
+        <div class="info" id="firstTerritoryIDInfo">
+            <h3>Primeira Linha da Coluna Territory ID</h3>
+            <p>ID: <span id="firstTerritoryID">-</span></p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Meu Website. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        
+        function toggleTable() {
+            var table = document.getElementById("csvTable");
+            if (table.classList.contains("hide")) {
+                table.classList.remove("hide"); // Exibe a tabela se estiver oculta
+            } else {
+                table.classList.add("hide"); // Oculta a tabela se estiver visível
+            }
+        }
+
+        // Função para extrair dados da tabela
+        function extractDataFromTable() {
+            var editionNumbers = document.getElementById("csvTable").rows.length - 1; // Número de edições
+            var lastDate = document.getElementById("csvTable").rows[document.getElementById("csvTable").rows.length - 1].cells[1].textContent; // Última data
+            var firstDate = document.getElementById("csvTable").rows[1].cells[1].textContent; // Primeira data
+            var firstTerritoryID = document.getElementById("csvTable").rows[1].cells[2].textContent; // Primeiro ID do território
+
+            // Atualiza os valores das divs com os dados extraídos
+            document.getElementById("editionCount").textContent = editionNumbers;
+            document.getElementById("lastDate").textContent = lastDate;
+            document.getElementById("firstDate").textContent = firstDate;
+            document.getElementById("firstTerritoryID").textContent = firstTerritoryID;
+        }
+
+        // Extrai os dados da tabela quando a página carrega
+        window.onload = extractDataFromTable;
+
+        // Função para extrair e salvar os links em um arquivo de texto
+        function saveLinksToFile() {
+            // Array para armazenar os links
+            var links = [];
+
+            // Obtém todas as células da coluna 'file_urls'
+            var cells = document.querySelectorAll("td:nth-child(8)"); // 8 é o índice da coluna file_urls (começando de 1)
+
+            // Percorre todas as células da coluna 'file_urls' e extrai os links
+            cells.forEach(function(cell) {
+                var link = cell.textContent.trim(); // Obtém o link da célula
+                links.push(link); // Adiciona o link ao array
+            });
+
+            // Cria um elemento de texto com os links formatados
+            var text = links.join('\n');
+
+            // Cria um objeto Blob com o conteúdo do arquivo de texto
+            var blob = new Blob([text], { type: 'text/plain' });
+
+            // Cria um URL para o Blob
+            var url = URL.createObjectURL(blob);
+
+            // Cria um elemento de link para fazer o download do arquivo
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = 'links.txt'; // Nome do arquivo
+
+            // Adiciona o link à página e clica nele para iniciar o download
+            document.body.appendChild(link);
+            link.click();
+
+            // Remove o link da página
+            document.body.removeChild(link);
+        }
+
+        // Função para fazer o download de todos os links presentes no arquivo de texto
+        // Função para fazer o download de todos os links presentes no arquivo de texto selecionado
+        // Função para fazer o download de todos os links presentes no arquivo de texto selecionado
+        
+
+    
+    </script>
+</body>
+</html>

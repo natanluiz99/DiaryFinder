@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download de Arquivos PDF</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Diary finder</h1>
+        <nav>
+            <ul>
+                <li><a href="/atualizar-repositorio">Página Inicial</a></li>
+                <li><a href="/sobre">Sobre</a></li>
+                <li><a href="/contato">Contato</a></li>
+                <li><a href="/download">Download</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div class="container">
+            <div class="box">
+                <h1>Download de Arquivos PDF</h1>
+                <form action="/download-from-txt" method="post" enctype="multipart/form-data">
+                    <label for="txt_file">Selecione o arquivo de texto:</label><br>
+                    <input type="file" id="txt_file" name="file" accept=".txt"><br><br>
+                    <button type="submit">Download de Arquivos PDF</button>
+                </form>
+                <h1>Mesclar Arquivos PDF</h1>
+                <form action="/merge-pdfs" method="post" enctype="multipart/form-data">
+                    <label for="pdf_files">Selecione os arquivos PDF para mesclar:</label><br>
+                    <input type="file" id="pdf_files" name="files" accept=".pdf" multiple><br><br>
+                    <button type="submit">Mesclar PDFs</button>
+                </form>
+                <h1>Análise de PDF</h1>
+                <form action="/analyze-pdf" method="post" enctype="multipart/form-data">
+                    <label for="pdf-file">Selecione um arquivo PDF:</label><br>
+                    <input type="file" id="pdf-file" name="file" accept=".pdf"><br><br>
+                    <button type="submit">Enviar</button>
+                </form>
+
+                <h1>Fazer Pergunta e Analisar PDF</h1>
+                <form action="/analyze-pdf" method="post" enctype="multipart/form-data">
+                    <label for="file">Selecione um arquivo PDF:</label>
+                    <input type="file" name="file" required><br><br>
+                    
+                    <label for="question">Faça sua pergunta:</label>
+                    <input type="text" name="question" required><br><br>
+
+                    <input type="submit" value="Enviar">
+                </form>
+                
+            </div>
+        </div>
+        
+    </main>
+    <footer>
+        <p>&copy; 2024 Meu Website. Todos os direitos reservados.</p>
+    </footer>
+    
+
+</body>
+</html>

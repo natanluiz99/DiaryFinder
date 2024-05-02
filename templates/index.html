@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atualizar Repositório</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='style.css') }}">
+
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Diary finder</h1>
+        <nav>
+            <ul>
+                <li><a href="/atualizar-repositorio">Página Inicial</a></li>
+                <li><a href="/sobre">Sobre</a></li>
+                <li><a href="/contato">Contato</a></li>
+                <li><a href="/download">Download</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main>
+        <div class="container">
+            <div class="box">
+                <h1>Consultar cidades</h1>
+                <form id="scrapyForm">
+                    <label for="cidade">Cidade:</label>
+                    <select id="cidade" name="cidade" required>
+                        <!-- Opções serão preenchidas dinamicamente com JavaScript -->
+                    </select><br><br>
+                    <label for="dataInicio">Data de Início:</label>
+                    <input type="date" id="dataInicio" name="dataInicio" required><br><br>
+                    <label for="dataFim">Data de Término:</label>
+                    <input type="date" id="dataFim" name="dataFim" required><br><br>
+                    <input type="submit" value="Executar Scrapy">
+                    <button onclick="window.location.href='/abrir-csv'">Escolher CSV</button>
+                    <button onclick="window.location.href='/download'">Download</button>
+                    <div class="box">
+                        <div id="resultado"></div>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+        
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Meu Website. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        // Função para preencher dinamicamente as opções de cidade
+        async function preencherCidades() {
+            try {
+                // Faz uma solicitação GET para obter a lista de cidades disponíveis
+                const response = await fetch("/listar-cidades");
+                const data = await response.json();
+
+                // Obtém o elemento <select> pelo ID
+                const selectCidade = document.getElementById("cidade");
+
+                // Limpa as opções existentes
+                selectCidade.innerHTML = "";
+
+                // Preenche as opções com os dados obtidos
+                data.cidades.forEach(cidade => {
+                    const option = document.createElement("option");
+                    option.text = cidade;
+                    option.value = cidade;
+                    selectCidade.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Erro ao obter as cidades:", error);
+            }
+        }
+
+        // Chama a função para preencher as cidades ao carregar a página
+        window.onload = preencherCidades;
+
+        // document.getElementById("scrapyForm").addEventListener("submit", function(event) {
+        //     event.preventDefault();
+        //     const formData = new FormData(event.target);
+        //     const cidade = formData.get("cidade");
+        //     const data = formData.get("data");
+        //     fetch(`/executar-scrapy/${cidade}/${data}`)
+        //         .then(response => response.text())
+        //         .then(result => {
+        //             document.getElementById("resultado").innerHTML = result;
+        //         });
+        // });
+
+        document.getElementById("scrapyForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+             const formData = new FormData(event.target);
+            const cidade = formData.get("cidade");
+            const dataInicio = formData.get("dataInicio");
+            const dataFim = formData.get("dataFim");
+            fetch(`/executar-scrapy/${cidade}/${dataInicio}/${dataFim}`)
+                .then(response => response.text())
+                .then(result => {
+                    document.getElementById("resultado").innerHTML = result;
+                });
+        });
+
+
+
+    </script>
+</body>
+</html>

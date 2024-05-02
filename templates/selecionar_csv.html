@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atualizar Repositório</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='style.css') }}">
+
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Diary finder</h1>
+        <nav>
+            <ul>
+                <li><a href="/atualizar-repositorio">Página Inicial</a></li>
+                <li><a href="/sobre">Sobre</a></li>
+                <li><a href="/contato">Contato</a></li>
+                <li><a href="/download">Download</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main>
+        <div class="container">
+            <div class="box">
+                <h1>Selecionar Arquivo CSV</h1>
+                <form action="/exibir-csv/" method="get" id="csvForm">
+                    <label for="csv">Selecione um arquivo CSV:</label><br>
+                    <select name="cidade" id="csv">
+                        {% for csv_file in csv_files %}
+                            <option value="{{ csv_file }}">{{ csv_file }}</option>
+                        {% endfor %}
+                    </select><br>
+                    <input type="button" value="Abrir CSV" onclick="abrirCSV()">
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Meu Website. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        function abrirCSV() {
+            // Obter o valor selecionado da cidade
+            var select = document.getElementById("csv");
+            var cidadeEscolhida = select.options[select.selectedIndex].value;
+
+            // Atualizar o atributo action do formulário com a cidade escolhida
+            var form = document.getElementById("csvForm");
+            form.action = "/exibir-csv/" + cidadeEscolhida;
+
+            // Submeter o formulário
+            form.submit();
+        }
+    </script>
+</body>
+</html>

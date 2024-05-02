@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escolher CSV</title>
+</head>
+<body>
+    <h1>Escolher CSV</h1>
+    <form action="/exibir-csv" method="get">
+        <label for="csv">Selecione um arquivo CSV:</label><br>
+        <select name="cidade" id="csv">
+            {% for csv_file in csv_files %}
+                <option value="{{ csv_file }}">{{ csv_file }}</option>
+            {% endfor %}
+        </select><br>
+        <input type="submit" value="Abrir CSV">
+    </form>
+</body>
+</html>
