@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from PyPDF2 import PdfMerger, PdfReader, PdfWriter
 from transformers import pipeline
+from fastapi.middleware.cors import CORSMiddleware
 import fitz  # PyMuPDF
 
 from typing import List, Optional
@@ -20,6 +21,19 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
+
+
+# CORS (Cross-Origin Resource Sharing) Middleware para permitir solicitações de diferentes origens
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Altere isso para permitir apenas origens específicas
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+
 # Inicializar o pipeline BERT para question answering
 qa_pipeline = pipeline("question-answering", model="mrm8488/bert-base-portuguese-cased-finetuned-squad-v1-pt")
 
@@ -29,6 +43,10 @@ qa_pipeline = pipeline("question-answering", model="mrm8488/bert-base-portuguese
 UPLOAD_DIRECTORY = "uploads"
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
+
+@app.get("/download")
+async def download_page(request: Request):
+    return templates.TemplateResponse("download.html", {"request": request})
 
 @app.post("/analyze-pdf")
 async def analyze_pdf(file: UploadFile = File(...), question: str = Form(...)):
@@ -59,19 +77,55 @@ async def analyze_pdf(file: UploadFile = File(...), question: str = Form(...)):
         # Combinar as respostas em um único texto
         combined_answer = ' '.join(answers)
 
-        return {"question": question, "answer": combined_answer}
+        # Retornar a resposta como parte do JSON
+        return JSONResponse(content={"question": question, "answer": combined_answer})
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao processar o arquivo PDF: {str(e)}")
+        return JSONResponse(status_code=500, content={"error": f"Erro ao processar o arquivo PDF: {str(e)}"})
 
 
 
+#-------------------------------------------------------------
+# Endpoint para receber a análise do PDF e exibi-la na página de download
+@app.post("/display-analysis", response_class=HTMLResponse)
+async def display_analysis(file: UploadFile = File(...), question: str = Form(...)):
+    try:
+        # Ler o conteúdo do arquivo PDF enviado
+        contents = await file.read()
+
+        # Extrair texto do PDF
+        pdf_document = fitz.open(stream=contents)
+        text = ""
+        for page_number in range(len(pdf_document)):
+            page = pdf_document[page_number]
+            text += page.get_text()
+
+        # Dividir o texto em segmentos menores (por exemplo, frases)
+        segments = text.split('. ')
+        
+        # Inicializar uma lista para armazenar as respostas
+        answers = []
+        
+        # Fazer uma chamada ao modelo para cada segmento
+        for segment in segments:
+            # Verificar se o segmento contém conteúdo suficiente
+            if segment.strip():
+                answer = qa_pipeline(question=question, context=segment)
+                answers.append(answer['answer'])
+        
+        # Combinar as respostas em um único texto
+        combined_answer = ' '.join(answers)
+
+        # Renderizar o resultado na página de download
+        return templates.TemplateResponse("download.html", {"request": request, "result": combined_answer})
+
+    
+    except Exception as e:
+        # Se ocorrer um erro, retorne um JSON com uma mensagem de erro
+        return {"error": f"Erro ao processar o arquivo PDF: {str(e)}"}
+#-------------------------------------------------------------
 
 
-
-@app.get("/download")
-async def download_page(request: Request):
-    return templates.TemplateResponse("download.html", {"request": request})
 
 
 @app.post("/upload-file")
