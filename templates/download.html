@@ -41,24 +41,62 @@
                 </form>
 
                 <h1>Fazer Pergunta e Analisar PDF</h1>
-                <form action="/analyze-pdf" method="post" enctype="multipart/form-data">
-                    <label for="file">Selecione um arquivo PDF:</label>
-                    <input type="file" name="file" required><br><br>
+                <form id="analyze-pdf-form">
+                    <label for="pdf-file">Selecione um arquivo PDF:</label><br>
+                    <input type="file" id="pdf-file" name="file" accept=".pdf" required><br><br>
                     
                     <label for="question">Faça sua pergunta:</label>
-                    <input type="text" name="question" required><br><br>
+                    <input type="text" id="question" name="question" required><br><br>
 
                     <input type="submit" value="Enviar">
                 </form>
-                
+                <!-- Div para exibir a resposta -->
+                <div class="box" id="answer-box"></div>
             </div>
         </div>
-        
+          
     </main>
     <footer>
         <p>&copy; 2024 Meu Website. Todos os direitos reservados.</p>
     </footer>
-    
+    <script>
+        // Captura o evento submit do formulário
+        document.getElementById("analyze-pdf-form").addEventListener("submit", async function(event) {
+            event.preventDefault(); // Impede o comportamento padrão do formulário
+
+            // Captura a pergunta e o arquivo PDF selecionado
+            const question = document.getElementById('question').value;
+            const file = document.getElementById('pdf-file').files[0];
+
+            // Cria um objeto FormData para enviar os dados
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('question', question);
+
+            try {
+                // Envia a requisição para o endpoint adequado
+                const response = await fetch('/analyze-pdf', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                // Verifica se a requisição foi bem-sucedida
+                if (response.ok) {
+                    // Extrai os dados JSON da resposta
+                    const data = await response.json();
+                    // Exibe a resposta na div "answer-box"
+                    document.getElementById('answer-box').innerText = `Resposta: ${data.answer}`;
+                } else {
+                    // Exibe uma mensagem de erro se a requisição falhou
+                    throw new Error('Erro ao enviar a pergunta.');
+                }
+            } catch (error) {
+                console.error(error);
+                // Exibe uma mensagem de erro na div "answer-box"
+                document.getElementById('answer-box').innerText = 'Erro ao processar a pergunta.';
+            }
+        });
+    </script>
 
 </body>
 </html>
